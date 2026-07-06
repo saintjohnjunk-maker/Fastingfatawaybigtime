@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arc — Fasting Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12131A;
+    --ink-2:#1B1D28;
+    --paper:#F2F0EA;
+    --amber:#E8A33D;
+    --indigo:#5B6EE8;
+    --green:#5FA88F;
+    --muted:#8B8D98;
+    --line:rgba(242,240,234,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:32px;
+  }
+  .brand{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:-0.01em;
+  }
+  .brand span{color:var(--amber);}
+  .tagline{
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+
+  /* Hero ring */
+  .ring-stage{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:12px auto 28px;
+    width:280px;
+    height:280px;
+  }
+  svg.ring{ transform:rotate(-90deg); }
+  .ring-track{ fill:none; stroke:var(--ink-2); stroke-width:10; }
+  .ring-progress{
+    fill:none;
+    stroke-width:10;
+    stroke-linecap:round;
+    transition:stroke-dashoffset 0.6s ease, stroke 0.6s ease;
+  }
+  .ring-center{
+    position:absolute;
+    text-align:center;
+  }
+  .ring-time{
+    font-family:'JetBrains Mono',monospace;
+    font-size:40px;
+    font-weight:500;
+    letter-spacing:-0.02em;
+    font-variant-numeric:tabular-nums;
+  }
+  .ring-label{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  .ring-goal{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  .cta-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    border:none;
+    border-radius:100px;
+    padding:14px 20px;
+    cursor:pointer;
+    transition:transform 0.15s ease, opacity 0.15s ease;
+  }
+  button:active{ transform:scale(0.97); }
+  .btn-primary{
+    flex:1;
+    background:var(--indigo);
+    color:var(--paper);
+  }
+  .btn-stop{
+    flex:1;
+    background:var(--amber);
+    color:var(--ink);
+  }
+  .btn-ghost{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid var(--line);
+  }
+
+  .goal-picker{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin:18px 0 6px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .goal-chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    padding:7px 12px;
+    border-radius:100px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--muted);
+  }
+  .goal-chip.active{
+    background:var(--indigo);
+    border-color:var(--indigo);
+    color:var(--paper);
+  }
+  .goal-custom{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:5px 6px 5px 14px;
+  }
+  .goal-custom.active{
+    border-color:var(--indigo);
+  }
+  .goal-custom input{
+    width:44px;
+    background:transparent;
+    border:none;
+    color:var(--paper);
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    text-align:right;
+    -moz-appearance:textfield;
+  }
+  .goal-custom input::-webkit-outer-spin-button,
+  .goal-custom input::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+  }
+  .goal-custom input:focus{ outline:none; }
+  .goal-custom span{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .goal-custom button{
+    background:var(--ink-2);
+    color:var(--paper);
+    border-radius:100px;
+    padding:5px 12px;
+    font-size:11px;
+  }
+
+  section{ margin-top:36px; }
+  .section-title{
+    font-family:'Fraunces',serif;
+    font-size:17px;
+    font-weight:500;
+    margin-bottom:14px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  .section-title .hint{
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    color:var(--muted);
+    font-weight:400;
+  }
+
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .stat-card{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+  }
+  .stat-value{
+    font-family:'JetBrains Mono',monospace;
+    font-size:24px;
+    font-weight:700;
+  }
+  .stat-value.amber{ color:var(--amber); }
+  .stat-value.indigo{ color:var(--indigo); }
+  .stat-value.green{ color:var(--green); }
+  .stat-name{
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-top:4px;
+  }
+
+  .history-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .history-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:13px 16px;
+  }
+  .h-left{ display:flex; align-items:center; gap:12px; }
+  .h-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--indigo);
+    flex-shrink:0;
+  }
+  .h-dot.short{ background:var(--muted); }
+  .h-dot.goal{ background:var(--green); }
+  .h-date{
+    font-size:13px;
+    font-weight:500;
+  }
+  .h-window{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .h-dur{
+    font-family:'JetBrains Mono',monospace;
+    font-size:15px;
+    font-weight:700;
+  }
+  .h-del{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:16px;
+    padding:4px 8px;
+    cursor:pointer;
+  }
+
+  .empty{
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    padding:32px 10px;
+    border:1px dashed var(--line);
+    border-radius:14px;
+  }
+
+  /* Calorie tracker */
+  .cal-summary{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:12px;
+  }
+  .cal-total{
+    font-family:'JetBrains Mono',monospace;
+    font-size:28px;
+    font-weight:700;
+    color:var(--amber);
+  }
+  .cal-total-label{
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-top:2px;
+  }
+  .cal-day-nav{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .cal-day-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--paper);
+    width:30px;
+    height:30px;
+    padding:0;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+  }
+  .cal-day-label{
+    font-size:12px;
+    color:var(--muted);
+    min-width:64px;
+    text-align:center;
+  }
+  .cal-form{
+    display:flex;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .cal-form input{
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--paper);
+    padding:12px 14px;
+  }
+  .cal-form input:focus{ outline:none; border-color:var(--indigo); }
+  .cal-form input[name="food"]{ flex:1.6; }
+  .cal-form input[name="kcal"]{ flex:1; -moz-appearance:textfield; }
+  .cal-form input[name="kcal"]::-webkit-outer-spin-button,
+  .cal-form input[name="kcal"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .cal-form button{
+    background:var(--amber);
+    color:var(--ink);
+    padding:0 18px;
+    border-radius:10px;
+    font-size:14px;
+  }
+  .cal-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .cal-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 16px;
+  }
+  .cal-item-name{
+    font-size:13px;
+    font-weight:500;
+  }
+  .cal-item-time{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .cal-item-kcal{
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+    font-weight:700;
+    color:var(--amber);
+  }
+
+  /* Profile / stats card */
+  .profile-card{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:12px;
+  }
+  .profile-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .profile-title{
+    font-size:12px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .profile-edit-toggle{
+    background:none;
+    border:none;
+    color:var(--indigo);
+    font-size:12px;
+    font-weight:600;
+    padding:2px 4px;
+  }
+  .profile-form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:12px;
+  }
+  .profile-row{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .profile-row label{
+    font-size:10px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+  .profile-row input, .profile-row select{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    background:var(--ink);
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:var(--paper);
+    padding:9px 10px;
+  }
+  .profile-row input:focus, .profile-row select:focus{ outline:none; border-color:var(--indigo); }
+  .profile-save{
+    grid-column:1 / -1;
+    background:var(--indigo);
+    color:var(--paper);
+    border-radius:8px;
+    padding:11px;
+    margin-top:2px;
+    font-size:13px;
+  }
+  .profile-summary{
+    margin-top:10px;
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+  .profile-summary .empty-inline{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .profile-stat{ text-align:left; }
+  .profile-stat-value{
+    font-family:'JetBrains Mono',monospace;
+    font-size:16px;
+    font-weight:700;
+    color:var(--green);
+  }
+  .profile-stat-label{
+    font-size:10px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    margin-top:2px;
+  }
+
+  .cal-bar-track{
+    height:8px;
+    border-radius:100px;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    overflow:hidden;
+    margin-bottom:6px;
+  }
+  .cal-bar-fill{
+    height:100%;
+    width:0%;
+    background:var(--green);
+    transition:width 0.4s ease, background 0.4s ease;
+  }
+  .cal-remaining{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:14px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  .footer-note{
+    text-align:center;
+    color:var(--muted);
+    font-size:11px;
+    margin-top:40px;
+    line-height:1.6;
+  }
+
+  ::selection{ background:var(--amber); color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand">arc<span>.</span></div>
+      <div class="tagline">fasting tracker</div>
+    </div>
+  </header>
+
+  <div class="ring-stage">
+    <svg class="ring" width="280" height="280" viewBox="0 0 280 280">
+      <circle class="ring-track" cx="140" cy="140" r="120"></circle>
+      <circle id="ringProgress" class="ring-progress" cx="140" cy="140" r="120"
+        stroke="#5B6EE8" stroke-dasharray="754" stroke-dashoffset="754"></circle>
+    </svg>
+    <div class="ring-center">
+      <div class="ring-time" id="ringTime">00:00:00</div>
+      <div class="ring-label" id="ringLabel">Not fasting</div>
+      <div class="ring-goal" id="ringGoal"></div>
+    </div>
+  </div>
+
+  <div class="cta-row" id="ctaRow">
+    <button class="btn-primary" id="startBtn">Start fast</button>
+  </div>
+
+  <div class="goal-picker" id="goalPicker">
+    <button class="goal-chip" data-goal="12">12h</button>
+    <button class="goal-chip active" data-goal="16">16h</button>
+    <button class="goal-chip" data-goal="18">18h</button>
+    <button class="goal-chip" data-goal="20">20h</button>
+    <button class="goal-chip" data-goal="24">24h</button>
+    <div class="goal-custom" id="goalCustom">
+      <input type="number" id="customGoalInput" min="1" max="240" step="0.5" placeholder="—">
+      <span>h</span>
+      <button id="customGoalSet">Set</button>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-title">Overview <span class="hint" id="totalFasts">0 fasts logged</span></div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value indigo" id="statStreak">0</div>
+        <div class="stat-name">Day streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value amber" id="statLongest">0h</div>
+        <div class="stat-name">Longest fast</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value green" id="statAvg">0h</div>
+        <div class="stat-name">Average length</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statGoalRate">0%</div>
+        <div class="stat-name">Goal reached</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">Calories <span class="hint" id="calDayHint"></span></div>
+
+    <div class="profile-card" id="profileCard">
+      <div class="profile-header">
+        <div class="profile-title">Your stats</div>
+        <button class="profile-edit-toggle" id="profileEditToggle">Edit</button>
+      </div>
+      <div class="profile-form" id="profileForm" style="display:none;">
+        <div class="profile-row">
+          <label>Age</label>
+          <input type="number" id="pAge" min="10" max="100" placeholder="yrs">
+        </div>
+        <div class="profile-row">
+          <label>Sex</label>
+          <select id="pSex">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="profile-row">
+          <label>Height</label>
+          <input type="number" id="pHeight" min="100" max="250" placeholder="cm">
+        </div>
+        <div class="profile-row">
+          <label>Weight</label>
+          <input type="number" id="pWeight" min="30" max="300" placeholder="kg" step="0.1">
+        </div>
+        <div class="profile-row">
+          <label>Activity</label>
+          <select id="pActivity">
+            <option value="1.2">Sedentary</option>
+            <option value="1.375">Light</option>
+            <option value="1.55" selected>Moderate</option>
+            <option value="1.725">Active</option>
+            <option value="1.9">Very active</option>
+          </select>
+        </div>
+        <button class="profile-save" id="profileSave">Save stats</button>
+      </div>
+      <div class="profile-summary" id="profileSummary">
+        <span class="empty-inline">Add your stats to see a daily estimate.</span>
+      </div>
+    </div>
+
+    <div class="cal-summary">
+      <div>
+        <div class="cal-total" id="calTotal">0</div>
+        <div class="cal-total-label" id="calTotalLabel">Logged today</div>
+      </div>
+      <div class="cal-day-nav">
+        <button class="cal-day-btn" id="calPrev">‹</button>
+        <div class="cal-day-label" id="calDayLabel">Today</div>
+        <button class="cal-day-btn" id="calNext">›</button>
+      </div>
+    </div>
+    <div class="cal-bar-track" id="calBarTrack" style="display:none;">
+      <div class="cal-bar-fill" id="calBarFill"></div>
+    </div>
+    <div class="cal-remaining" id="calRemaining"></div>
+
+    <form class="cal-form" id="calForm">
+      <input type="text" name="food" placeholder="What did you eat" autocomplete="off" required>
+      <input type="number" name="kcal" placeholder="kcal" min="0" step="1" required>
+      <button type="submit">Add</button>
+    </form>
+    <div class="cal-list" id="calList">
+      <div class="empty">Nothing logged for this day yet.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">History</div>
+    <div class="history-list" id="historyList">
+      <div class="empty">Your completed fasts will show up here.</div>
+    </div>
+  </section>
+
+  <div class="footer-note">Your data is stored privately and only visible to you.</div>
+
+</div>
+
+<script>
+(function(){
+  // Local storage shim — mirrors the window.storage API (get/set/delete)
+  // so this file works fully offline once downloaded and opened in a browser.
+  const localDB = {
+    async get(key){
+      const raw = localStorage.getItem('arc:' + key);
+      return raw === null ? null : { key, value: raw, shared:false };
+    },
+    async set(key, value){
+      localStorage.setItem('arc:' + key, value);
+      return { key, value, shared:false };
+    },
+    async delete(key){
+      localStorage.removeItem('arc:' + key);
+      return { key, deleted:true, shared:false };
+    }
+  };
+  window.storage = localDB;
+})();
+</script>
+<script>
+(function(){
+  const RING_CIRCUMFERENCE = 2 * Math.PI * 120;
+  const COLORS = { fasting: '#5B6EE8', eating: '#E8A33D' };
+
+  let state = {
+    activeFast: null, // { start: iso, goalHours: number }
+    history: [], // [{start, end, durationSec, goalHours}]
+    goalHours: 16
+  };
+
+  const ringProgress = document.getElementById('ringProgress');
+  const ringTime = document.getElementById('ringTime');
+  const ringLabel = document.getElementById('ringLabel');
+  const ringGoal = document.getElementById('ringGoal');
+  const ctaRow = document.getElementById('ctaRow');
+  const goalPicker = document.getElementById('goalPicker');
+  const historyList = document.getElementById('historyList');
+
+  ringProgress.setAttribute('stroke-dasharray', RING_CIRCUMFERENCE);
+
+  function fmtHMS(totalSeconds){
+    totalSeconds = Math.max(0, Math.floor(totalSeconds));
+    const h = Math.floor(totalSeconds/3600);
+    const m = Math.floor((totalSeconds%3600)/60);
+    const s = totalSeconds%60;
+    return [h,m,s].map(v=>String(v).padStart(2,'0')).join(':');
+  }
+
+  function fmtHours(seconds){
+    const h = seconds/3600;
+    return (Math.round(h*10)/10) + 'h';
+  }
+
+  function fmtDate(iso){
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+  }
+
+  function fmtClock(iso){
+    const d = new Date(iso);
+    return d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+  }
+
+  async function loadState(){
+    try{
+      const active = await window.storage.get('fasting:active', false);
+      if(active) state.activeFast = JSON.parse(active.value);
+    }catch(e){}
+    try{
+      const hist = await window.storage.get('fasting:history', false);
+      if(hist) state.history = JSON.parse(hist.value);
+    }catch(e){}
+    try{
+      const goal = await window.storage.get('fasting:goal', false);
+      if(goal) state.goalHours = JSON.parse(goal.value);
+    }catch(e){}
+    refreshGoalChips();
+  }
+
+  function refreshGoalChips(){
+    const presets = [12,16,18,20,24];
+    const isPreset = presets.includes(state.goalHours);
+    document.querySelectorAll('.goal-chip').forEach(chip=>{
+      chip.classList.toggle('active', Number(chip.dataset.goal) === state.goalHours);
+    });
+    document.getElementById('goalCustom').classList.toggle('active', !isPreset);
+    const input = document.getElementById('customGoalInput');
+    if(!isPreset) input.value = state.goalHours;
+  }
+
+  async function saveActive(){
+    try{
+      if(state.activeFast){
+        await window.storage.set('fasting:active', JSON.stringify(state.activeFast), false);
+      } else {
+        await window.storage.delete('fasting:active', false);
+      }
+    }catch(e){ console.error('save active failed', e); }
+  }
+
+  async function saveHistory(){
+    try{
+      await window.storage.set('fasting:history', JSON.stringify(state.history), false);
+    }catch(e){ console.error('save history failed', e); }
+  }
+
+  async function saveGoal(){
+    try{
+      await window.storage.set('fasting:goal', JSON.stringify(state.goalHours), false);
+    }catch(e){ console.error('save goal failed', e); }
+  }
+
+  function startFast(){
+    state.activeFast = { start: new Date().toISOString(), goalHours: state.goalHours };
+    saveActive();
+    render();
+  }
+
+  function stopFast(){
+    if(!state.activeFast) return;
+    const startMs = new Date(state.activeFast.start).getTime();
+    const endIso = new Date().toISOString();
+    const durationSec = Math.floor((Date.now() - startMs)/1000);
+    state.history.unshift({
+      start: state.activeFast.start,
+      end: endIso,
+      durationSec,
+      goalHours: state.activeFast.goalHours
+    });
+    state.activeFast = null;
+    saveActive();
+    saveHistory();
+    render();
+  }
+
+  function deleteEntry(idx){
+    state.history.splice(idx,1);
+    saveHistory();
+    render();
+  }
+
+  function computeStats(){
+    const h = state.history;
+    if(h.length === 0){
+      return { streak:0, longest:0, avg:0, goalRate:0, count:0 };
+    }
+    const longest = Math.max(...h.map(f=>f.durationSec));
+    const avg = h.reduce((s,f)=>s+f.durationSec,0)/h.length;
+    const reached = h.filter(f=>f.durationSec >= f.goalHours*3600).length;
+    const goalRate = Math.round((reached/h.length)*100);
+
+    // streak: consecutive days (going backward from most recent) with at least one fast that reached its goal
+    const daySet = new Set();
+    h.forEach(f=>{
+      if(f.durationSec >= f.goalHours*3600){
+        const d = new Date(f.end);
+        daySet.add(d.toDateString());
+      }
+    });
+    let streak = 0;
+    let cursor = new Date();
+    // allow today or yesterday as the start point
+    if(!daySet.has(cursor.toDateString())){
+      cursor.setDate(cursor.getDate()-1);
+    }
+    while(daySet.has(cursor.toDateString())){
+      streak++;
+      cursor.setDate(cursor.getDate()-1);
+    }
+    return { streak, longest, avg, goalRate, count: h.length };
+  }
+
+  function render(){
+    // CTA + goal picker
+    ctaRow.innerHTML = '';
+    if(state.activeFast){
+      const btn = document.createElement('button');
+      btn.className = 'btn-stop';
+      btn.textContent = 'End fast';
+      btn.onclick = stopFast;
+      ctaRow.appendChild(btn);
+      goalPicker.style.display = 'none';
+    } else {
+      const btn = document.createElement('button');
+      btn.className = 'btn-primary';
+      btn.textContent = 'Start fast';
+      btn.onclick = startFast;
+      ctaRow.appendChild(btn);
+      goalPicker.style.display = 'flex';
+    }
+
+    renderStats();
+    renderHistory();
+    tick();
+  }
+
+  function renderStats(){
+    const s = computeStats();
+    document.getElementById('totalFasts').textContent = s.count + (s.count===1 ? ' fast logged' : ' fasts logged');
+    document.getElementById('statStreak').textContent = s.streak;
+    document.getElementById('statLongest').textContent = s.count ? fmtHours(s.longest) : '0h';
+    document.getElementById('statAvg').textContent = s.count ? fmtHours(s.avg) : '0h';
+    document.getElementById('statGoalRate').textContent = s.count ? s.goalRate + '%' : '0%';
+  }
+
+  function renderHistory(){
+    if(state.history.length === 0){
+      historyList.innerHTML = '<div class="empty">Your completed fasts will show up here.</div>';
+      return;
+    }
+    historyList.innerHTML = '';
+    state.history.forEach((f, idx)=>{
+      const reached = f.durationSec >= f.goalHours*3600;
+      const short = f.durationSec < f.goalHours*3600*0.5;
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `
+        <div class="h-left">
+          <div class="h-dot ${reached ? 'goal' : (short ? 'short':'')}"></div>
+          <div>
+            <div class="h-date">${fmtDate(f.start)}</div>
+            <div class="h-window">${fmtClock(f.start)} → ${fmtClock(f.end)} · goal ${f.goalHours}h</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="h-dur">${fmtHours(f.durationSec)}</div>
+          <button class="h-del" data-idx="${idx}" title="Delete">✕</button>
+        </div>
+      `;
+      historyList.appendChild(item);
+    });
+    historyList.querySelectorAll('.h-del').forEach(btn=>{
+      btn.onclick = ()=> deleteEntry(Number(btn.dataset.idx));
+    });
+  }
+
+  function tick(){
+    if(state.activeFast){
+      const startMs = new Date(state.activeFast.start).getTime();
+      const elapsedSec = (Date.now() - startMs)/1000;
+      const goalSec = state.activeFast.goalHours * 3600;
+      const pct = Math.min(1, elapsedSec/goalSec);
+      const offset = RING_CIRCUMFERENCE * (1 - pct);
+      ringProgress.style.strokeDashoffset = offset;
+      ringProgress.style.stroke = pct >= 1 ? COLORS.eating : COLORS.fasting;
+      ringTime.textContent = fmtHMS(elapsedSec);
+      ringLabel.textContent = pct >= 1 ? 'Goal reached' : 'Fasting';
+      ringGoal.textContent = 'Goal: ' + state.activeFast.goalHours + 'h';
+    } else {
+      ringProgress.style.strokeDashoffset = RING_CIRCUMFERENCE;
+      ringProgress.style.stroke = COLORS.fasting;
+      ringTime.textContent = '00:00:00';
+      ringLabel.textContent = 'Not fasting';
+      ringGoal.textContent = '';
+    }
+  }
+
+  goalPicker.addEventListener('click', (e)=>{
+    const chip = e.target.closest('.goal-chip');
+    if(chip){
+      state.goalHours = Number(chip.dataset.goal);
+      refreshGoalChips();
+      saveGoal();
+      return;
+    }
+    if(e.target.id === 'customGoalSet'){
+      const input = document.getElementById('customGoalInput');
+      const val = parseFloat(input.value);
+      if(!val || val <= 0) return;
+      state.goalHours = Math.min(240, Math.round(val*2)/2);
+      refreshGoalChips();
+      saveGoal();
+    }
+  });
+
+  document.getElementById('customGoalInput').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      document.getElementById('customGoalSet').click();
+    }
+  });
+
+  /* ---------------- Profile & calorie target ---------------- */
+  let profile = { age:null, sex:'male', height:null, weight:null, activity:1.55 };
+
+  async function loadProfile(){
+    try{
+      const res = await window.storage.get('profile:stats', false);
+      if(res) profile = Object.assign(profile, JSON.parse(res.value));
+    }catch(e){}
+    document.getElementById('pAge').value = profile.age || '';
+    document.getElementById('pSex').value = profile.sex || 'male';
+    document.getElementById('pHeight').value = profile.height || '';
+    document.getElementById('pWeight').value = profile.weight || '';
+    document.getElementById('pActivity').value = profile.activity || 1.55;
+    renderProfileSummary();
+  }
+
+  async function saveProfile(){
+    try{
+      await window.storage.set('profile:stats', JSON.stringify(profile), false);
+    }catch(e){ console.error('save profile failed', e); }
+  }
+
+  function calorieTarget(){
+    const { age, sex, height, weight, activity } = profile;
+    if(!age || !height || !weight) return null;
+    // Mifflin-St Jeor equation
+    let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+    bmr += (sex === 'male') ? 5 : -161;
+    const tdee = bmr * Number(activity || 1.55);
+    return { bmr: Math.round(bmr), tdee: Math.round(tdee) };
+  }
+
+  function renderProfileSummary(){
+    const summary = document.getElementById('profileSummary');
+    const result = calorieTarget();
+    if(!result){
+      summary.innerHTML = '<span class="empty-inline">Add your stats to see a daily estimate.</span>';
+      return;
+    }
+    summary.innerHTML = `
+      <div class="profile-stat">
+        <div class="profile-stat-value">${result.bmr}</div>
+        <div class="profile-stat-label">BMR kcal</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-value">${result.tdee}</div>
+        <div class="profile-stat-label">Daily estimate</div>
+      </div>
+    `;
+    renderCalories();
+  }
+
+  document.getElementById('profileEditToggle').addEventListener('click', ()=>{
+    const form = document.getElementById('profileForm');
+    form.style.display = form.style.display === 'none' ? 'grid' : 'none';
+  });
+
+  document.getElementById('profileSave').addEventListener('click', ()=>{
+    profile = {
+      age: Number(document.getElementById('pAge').value) || null,
+      sex: document.getElementById('pSex').value,
+      height: Number(document.getElementById('pHeight').value) || null,
+      weight: Number(document.getElementById('pWeight').value) || null,
+      activity: Number(document.getElementById('pActivity').value)
+    };
+    saveProfile();
+    renderProfileSummary();
+    document.getElementById('profileForm').style.display = 'none';
+  });
+
+  /* ---------------- Calorie tracker ---------------- */
+  let calDayOffset = 0; // 0 = today, -1 = yesterday, etc.
+  let calEntries = {}; // { 'YYYY-MM-DD': [{food, kcal, time}] }
+
+  function dateKey(offset){
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return d.toISOString().slice(0,10);
+  }
+
+  function dayLabel(offset){
+    if(offset === 0) return 'Today';
+    if(offset === -1) return 'Yesterday';
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return d.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+  }
+
+  async function loadCalories(){
+    try{
+      const res = await window.storage.get('calories:' + dateKey(calDayOffset), false);
+      calEntries[dateKey(calDayOffset)] = res ? JSON.parse(res.value) : [];
+    }catch(e){
+      calEntries[dateKey(calDayOffset)] = [];
+    }
+    renderCalories();
+  }
+
+  async function saveCalories(){
+    try{
+      await window.storage.set('calories:' + dateKey(calDayOffset), JSON.stringify(calEntries[dateKey(calDayOffset)] || []), false);
+    }catch(e){ console.error('save calories failed', e); }
+  }
+
+  function renderCalories(){
+    const key = dateKey(calDayOffset);
+    const entries = calEntries[key] || [];
+    document.getElementById('calDayLabel').textContent = dayLabel(calDayOffset);
+    document.getElementById('calNext').disabled = calDayOffset >= 0;
+    document.getElementById('calNext').style.opacity = calDayOffset >= 0 ? 0.35 : 1;
+
+    const total = entries.reduce((s,e)=>s + Number(e.kcal||0), 0);
+    document.getElementById('calTotal').textContent = total;
+
+    const target = calorieTarget();
+    const barTrack = document.getElementById('calBarTrack');
+    const barFill = document.getElementById('calBarFill');
+    const remainingEl = document.getElementById('calRemaining');
+    const totalLabel = document.getElementById('calTotalLabel');
+
+    if(target){
+      totalLabel.textContent = 'Logged of ' + target.tdee + ' kcal estimate';
+      barTrack.style.display = 'block';
+      const pct = Math.min(100, Math.round((total/target.tdee)*100));
+      barFill.style.width = pct + '%';
+      barFill.style.background = total > target.tdee ? 'var(--amber)' : 'var(--green)';
+      const remaining = target.tdee - total;
+      remainingEl.textContent = remaining >= 0
+        ? remaining + ' kcal remaining of your daily estimate'
+        : Math.abs(remaining) + ' kcal over your daily estimate';
+    } else {
+      totalLabel.textContent = 'Logged today';
+      barTrack.style.display = 'none';
+      remainingEl.textContent = '';
+    }
+
+    const list = document.getElementById('calList');
+    if(entries.length === 0){
+      list.innerHTML = '<div class="empty">Nothing logged for this day yet.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    entries.forEach((entry, idx)=>{
+      const item = document.createElement('div');
+      item.className = 'cal-item';
+      item.innerHTML = `
+        <div>
+          <div class="cal-item-name">${escapeHtml(entry.food)}</div>
+          <div class="cal-item-time">${entry.time}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="cal-item-kcal">${entry.kcal} kcal</div>
+          <button class="h-del" data-idx="${idx}" title="Delete">✕</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+    list.querySelectorAll('.h-del').forEach(btn=>{
+      btn.onclick = ()=>{
+        entries.splice(Number(btn.dataset.idx), 1);
+        saveCalories();
+        renderCalories();
+      };
+    });
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.getElementById('calForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const form = e.target;
+    const food = form.food.value.trim();
+    const kcal = Math.round(Number(form.kcal.value));
+    if(!food || !kcal || kcal < 0) return;
+    const key = dateKey(calDayOffset);
+    if(!calEntries[key]) calEntries[key] = [];
+    calEntries[key].push({
+      food,
+      kcal,
+      time: new Date().toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' })
+    });
+    saveCalories();
+    renderCalories();
+    form.reset();
+    form.food.focus();
+  });
+
+  document.getElementById('calPrev').addEventListener('click', ()=>{
+    calDayOffset -= 1;
+    loadCalories();
+  });
+
+  document.getElementById('calNext').addEventListener('click', ()=>{
+    if(calDayOffset >= 0) return;
+    calDayOffset += 1;
+    loadCalories();
+  });
+
+  (async function init(){
+    await loadState();
+    render();
+    await loadProfile();
+    await loadCalories();
+    setInterval(tick, 1000);
+  })();
+})();
+</script>
+</body>
+</html>
